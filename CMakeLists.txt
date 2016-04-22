@@ -13,13 +13,13 @@ project(websocketpp VERSION 0.7.0)
 set(include_install_dir "include")
 set(config_install_dir "lib/cmake/${PROJECT_NAME}")
 
-hunter_add_package(Boost COMPONENTS chrono regex system random thread)
+hunter_add_package(Boost COMPONENTS system random thread)
 hunter_add_package(OpenSSL)
 hunter_add_package(ZLIB)
 
 find_package(OpenSSL REQUIRED)
 find_package(ZLIB CONFIG REQUIRED)
-find_package(Boost CONFIG COMPONENTS chrono regex system random thread)
+find_package(Boost CONFIG COMPONENTS system random thread)
 
 add_library(websocketpp INTERFACE)
 target_include_directories(websocketpp INTERFACE
@@ -30,8 +30,6 @@ target_include_directories(websocketpp INTERFACE
 target_link_libraries(websocketpp INTERFACE
   ${OPENSSL_LIBRARIES}
   ZLIB::zlib
-  Boost::chrono
-  Boost::regex
   Boost::system
   Boost::random
   Boost::thread)
