@@ -26,6 +26,7 @@ target_include_directories(websocketpp INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/websocketpp>
   $<INSTALL_INTERFACE:${include_install_dir}>)
 target_link_libraries(websocketpp INTERFACE
+  ${CMAKE_DL_LIBS}
   ZLIB::zlib
   OpenSSL::SSL
   OpenSSL::Crypto
