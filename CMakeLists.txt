@@ -14,10 +14,11 @@ set(include_install_dir "include")
 set(config_install_dir "lib/cmake/${PROJECT_NAME}")
 
 hunter_add_package(ZLIB)
+hunter_add_package(OpenSSL)
 hunter_add_package(Boost COMPONENTS system random thread)
 
 find_package(ZLIB CONFIG REQUIRED)
-set(BOOST_CONFIG_LINK_OPENSSL ON)
+find_package(OpenSSL REQUIRED)
 find_package(Boost CONFIG COMPONENTS system random thread)
 
 add_library(websocketpp INTERFACE)
@@ -26,6 +27,8 @@ target_include_directories(websocketpp INTERFACE
   $<INSTALL_INTERFACE:${include_install_dir}>)
 target_link_libraries(websocketpp INTERFACE
   ZLIB::zlib
+  OpenSSL::SSL
+  OpenSSL::Crypto
   Boost::system
   Boost::random
   Boost::thread)
