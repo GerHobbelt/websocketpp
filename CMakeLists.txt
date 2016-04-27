@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 include("cmake/HunterGate.cmake")
 HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.14.12.tar.gz"
-    SHA1 "2d444140db0d53393b5490604006bb4f4896a444"
+  URL "https://github.com/ruslo/hunter/archive/v0.14.13.tar.gz"
+  SHA1 "95a031bbab876c3c049b3cd4c65b7a2981dad202"
 )
 
 option(ENABLE_CPP11 "Build websocketpp with CPP11 features enabled." TRUE)
