@@ -5,5 +5,5 @@
 	"includeFolders": [ "include" ],
 	"defines": [ "ASIO_STANDALONE", "_WEBSOCKETPP_CPP11_INTERNAL_=1" ],
 	"dependencies": [ "asio@1.23.0" ],
-	"version": "0.9.0"
+	"version": "0.8.3"
 }
