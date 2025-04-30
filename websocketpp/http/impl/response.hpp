@@ -79,7 +79,7 @@ inline size_t response::consume(char const * buf, size_t len, lib::error_code & 
 
             // check that the confirmed header bytes plus the outstanding
             // candidate bytes do not put us over the header size limit.
-            if (m_header_bytes + (end - begin) > max_header_size) {
+            if (m_header_bytes + static_cast<size_t>(end - begin) > max_header_size) {
                 ec = error::make_error_code(error::request_header_fields_too_large);
                 return 0;
             }
@@ -105,7 +105,7 @@ inline size_t response::consume(char const * buf, size_t len, lib::error_code & 
         // represents a line to be processed
 
         // update count of header bytes read so far
-        m_header_bytes += (end-begin+sizeof(header_delimiter));
+        m_header_bytes += (static_cast<size_t>(end-begin)+sizeof(header_delimiter));
         
         if (m_header_bytes > max_header_size) {
             // This read exceeded max header size

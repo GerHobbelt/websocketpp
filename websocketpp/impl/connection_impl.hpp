@@ -1417,7 +1417,6 @@ void connection<config>::write_http_response(lib::error_code const & ec) {
     }
 
     if (m_response.get_status_code() == http::status_code::uninitialized) {
-        lib::error_code status_ec;
         m_response.set_status(http::status_code::internal_server_error);
         m_ec = error::make_error_code(error::general);
     } else {
