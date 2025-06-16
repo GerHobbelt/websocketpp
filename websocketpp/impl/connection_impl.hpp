@@ -1610,7 +1610,19 @@ void connection<config>::handle_write_http_body_response(std::shared_ptr<downloa
     size_t nRead = downloadFile->read(m_handshake_buffer.data(),m_handshake_buffer.size());
     if (nRead == 0)
     {
-        this->handle_write_http_response(lib::error_code());
+        ////////////////////
+        this->log_http_result();
+        
+        if (m_ec) {
+            m_alog->write(log::alevel::devel,
+                "got to writing HTTP results with m_ec set: "+m_ec.message());
+        }
+        m_ec = make_error_code(error::http_connection_ended);
+        this->terminate(m_ec);
+        return;
+        ////////////////////
+        // this->handle_write_http_response(lib::error_code());
+        // return;
     }
     m_handshake_buffer.resize(nRead);
 
