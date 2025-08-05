@@ -1054,10 +1054,10 @@ protected:
         );
 
         if (config::enable_multithreading) {
-            lib::asio::dispatch(tcon->get_strand()->wrap([this, tcon, iterator, con_timer, callback]{
+            lib::asio::dispatch(tcon->get_strand()->wrap([this, tcon, results, con_timer, callback]{
                 lib::asio::async_connect(
                     tcon->get_raw_socket(),
-                results,
+					results,
                     tcon->get_strand()->wrap(lib::bind(
                         &type::handle_connect,
                         this,
