@@ -38,7 +38,7 @@
 
 #include <websocketpp/extensions/extension.hpp>
 
-#include "zlib.h"
+#include "zlib-ng.h"
 
 #include <algorithm>
 #include <string>
