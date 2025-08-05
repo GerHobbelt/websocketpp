@@ -79,7 +79,11 @@ public:
 
 private:
     // Storage space used for handler-based custom memory allocation.
+#if __cplusplus > 202002L // aligned_storage is deprecated after C++20
+    alignas(size) std::byte m_storage[size];
+#else
     lib::aligned_storage<size>::type m_storage;
+#endif
 
     // Whether the handler-based custom allocation storage has been used.
     bool m_in_use;

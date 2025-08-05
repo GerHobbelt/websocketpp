@@ -800,15 +800,17 @@ public:
         m_alog->write(log::alevel::devel, "asio::async_accept");
 
         if (config::enable_multithreading) {
-            m_acceptor->async_accept(
-                tcon->get_raw_socket(),
-                tcon->get_strand()->wrap(lib::bind(
-                    &type::handle_accept,
-                    this,
-                    callback,
-                    lib::placeholders::_1
-                ))
-            );
+            lib::asio::dispatch(tcon->get_strand()->wrap([this, tcon, callback]{
+                m_acceptor->async_accept(
+                    tcon->get_raw_socket(),
+                    tcon->get_strand()->wrap(lib::bind(
+                        &type::handle_accept,
+                        this,
+                        callback,
+                        lib::placeholders::_1
+                    ))
+                );
+            }));
         } else {
             m_acceptor->async_accept(
                 tcon->get_raw_socket(),
@@ -926,22 +928,39 @@ protected:
             )
         );
 
+        lib::asio::ip::resolver_base::flags resolve_flags = lib::asio::ip::resolver_base::flags();
+        if (!port.empty()) {
+            // port is always numeric
+            resolve_flags = resolve_flags | lib::asio::ip::resolver_base::flags::numeric_service;
+        }
+        // check if the host is a numeric address to specify proper resolve flags
+        lib::asio::error_code ec;
+        static_cast<void>(lib::asio::ip::make_address(host, ec));
+        if (!ec) {
+            resolve_flags = resolve_flags | lib::asio::ip::resolver_base::flags::numeric_host;
+        }
+
         if (config::enable_multithreading) {
-            m_resolver->async_resolve(
-                host, port,
-                tcon->get_strand()->wrap(lib::bind(
-                    &type::handle_resolve,
-                    this,
-                    tcon,
-                    dns_timer,
-                    cb,
-                    lib::placeholders::_1,
-                    lib::placeholders::_2
-                ))
-            );
+            lib::asio::dispatch(tcon->get_strand()->wrap([this, host, port, resolve_flags, tcon, dns_timer, cb]{
+                m_resolver->async_resolve(
+                    host,
+                    port,
+                    resolve_flags,
+                    tcon->get_strand()->wrap(lib::bind(
+                        &type::handle_resolve,
+                        this,
+                        tcon,
+                        dns_timer,
+                        cb,
+                        lib::placeholders::_1,
+                        lib::placeholders::_2
+                    ))
+                );
+            }));
         } else {
             m_resolver->async_resolve(
-                host, port,
+                host,
+                port,
                 lib::bind(
                     &type::handle_resolve,
                     this,
@@ -1035,18 +1054,20 @@ protected:
         );
 
         if (config::enable_multithreading) {
-            lib::asio::async_connect(
-                tcon->get_raw_socket(),
+            lib::asio::dispatch(tcon->get_strand()->wrap([this, tcon, iterator, con_timer, callback]{
+                lib::asio::async_connect(
+                    tcon->get_raw_socket(),
                 results,
-                tcon->get_strand()->wrap(lib::bind(
-                    &type::handle_connect,
-                    this,
-                    tcon,
-                    con_timer,
-                    callback,
-                    lib::placeholders::_1
-                ))
-            );
+                    tcon->get_strand()->wrap(lib::bind(
+                        &type::handle_connect,
+                        this,
+                        tcon,
+                        con_timer,
+                        callback,
+                        lib::placeholders::_1
+                    ))
+                );
+            }));
         } else {
             lib::asio::async_connect(
                 tcon->get_raw_socket(),

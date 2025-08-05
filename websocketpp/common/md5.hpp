@@ -198,7 +198,7 @@ static void md5_process(md5_state_t *pms, md5_byte_t const * data /*[64]*/) {
          * On little-endian machines, we can process properly aligned
          * data without copying it.
          */
-        if (!((data - (md5_byte_t const *)0) & 3)) {
+        if (!((reinterpret_cast<size_t>(data)) & 3)) {
         /* data are properly aligned */
         X = (md5_word_t const *)data;
         } else {
@@ -226,7 +226,10 @@ static void md5_process(md5_state_t *pms, md5_byte_t const * data /*[64]*/) {
 #    define xbuf X      /* (static only) */
 #  endif
         for (i = 0; i < 16; ++i, xp += 4)
-        xbuf[i] = xp[0] + (xp[1] << 8) + (xp[2] << 16) + (xp[3] << 24);
+        xbuf[i] = static_cast<md5_word_t>(xp[0])
+                + static_cast<md5_word_t>(xp[1] << 8)
+                + static_cast<md5_word_t>(xp[2] << 16)
+                + static_cast<md5_word_t>(xp[3] << 24);
     }
 #endif
     }
@@ -357,7 +360,7 @@ void md5_init(md5_state_t *pms) {
 void md5_append(md5_state_t *pms, md5_byte_t const * data, size_t nbytes) {
     md5_byte_t const * p = data;
     size_t left = nbytes;
-    int offset = (pms->count[0] >> 3) & 63;
+    size_t offset = (pms->count[0] >> 3) & 63;
     md5_word_t nbits = (md5_word_t)(nbytes << 3);
 
     if (nbytes <= 0)
@@ -371,7 +374,7 @@ void md5_append(md5_state_t *pms, md5_byte_t const * data, size_t nbytes) {
 
     /* Process an initial partial block. */
     if (offset) {
-    int copy = (offset + nbytes > 64 ? 64 - offset : static_cast<int>(nbytes));
+    size_t copy = (offset + nbytes > 64 ? 64 - offset : nbytes);
 
     std::memcpy(pms->buf + offset, p, copy);
     if (offset + copy < 64)

@@ -170,7 +170,7 @@ inline void calc(void const * src, size_t bytelength, unsigned char * hash) {
         w[lastBlockBytes >> 2] |= (unsigned int) sarray[lastBlockBytes + currentBlock] << ((3 - (lastBlockBytes & 3)) << 3);
     }
 
-    w[lastBlockBytes >> 2] |= 0x80 << ((3 - (lastBlockBytes & 3)) << 3);
+    w[lastBlockBytes >> 2] |= unsigned(0x80) << ((3 - (lastBlockBytes & 3)) << 3);
     if (endCurrentBlock >= 56) {
         innerHash(result, w);
         clearWBuffert(w);

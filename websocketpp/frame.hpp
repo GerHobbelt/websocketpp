@@ -128,7 +128,7 @@ namespace opcode {
      * @return Whether or not the opcode is invalid.
      */
     inline bool invalid(value v) {
-        return (v > 0xF || v < 0);
+        return (static_cast<int>(v) > 0xF || static_cast<int>(v) < 0);
     }
 
     /// Check if an opcode is for a control frame
@@ -647,7 +647,9 @@ void byte_mask(input_iter first, input_iter last, output_iter result,
 {
     size_t key_index = key_offset%4;
     while (first != last) {
-        *result = *first ^ key.c[key_index++];
+        // If both operands are integers, of the same rank, but different
+        // signs - signed is converted to unsigned.
+        *result = static_cast<uint8_t>(*first) ^ key.c[key_index++];
         key_index %= 4;
         ++result;
         ++first;
