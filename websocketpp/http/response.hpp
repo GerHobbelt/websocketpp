@@ -30,6 +30,7 @@
 
 #include <iostream>
 #include <string>
+#include <filesystem>
 
 #include <websocketpp/http/parser.hpp>
 
@@ -49,7 +50,7 @@ public:
         return std::filesystem::file_size(filePath);
     }
     lib::error_code open() {
-        f = fopen(filePath.c_str(),"r");
+        f = fopen((const char *)filePath.generic_u8string().c_str(), "r");
         if (!f) {
             return  error::make_error_code(error::istream_bad);
         }
