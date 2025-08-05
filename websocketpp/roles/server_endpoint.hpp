@@ -82,7 +82,7 @@ public:
     server(server<config> &) = delete;
 
     // no copy assignment operator because endpoints are not copyable
-    server<config> & operator=(server<config> const &) = delete;
+    server & operator=(server<config> const &) = delete;
 #endif // _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
 
 #ifdef _WEBSOCKETPP_MOVE_SEMANTICS_
@@ -91,7 +91,7 @@ public:
 
 #ifdef _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
     // no move assignment operator because of const member variables
-    server<config> & operator=(server<config> &&) = delete;
+    server & operator=(server<config> &&) = delete;
 #endif // _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
 
 #endif // _WEBSOCKETPP_MOVE_SEMANTICS_
