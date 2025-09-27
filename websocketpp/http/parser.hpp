@@ -286,7 +286,7 @@ InputIterator extract_attributes(InputIterator begin, InputIterator end,
  * @param [in] begin An iterator to the beginning of the sequence
  * @param [in] end An iterator to the end of the sequence
  * @param [out] parameters A reference to the parameters list to append
- * paramter values extracted to
+ * parameter values extracted to
  * @return An iterator to the character after the last parameter read
  */
 template <typename InputIterator>
