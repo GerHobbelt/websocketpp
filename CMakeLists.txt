@@ -78,7 +78,7 @@ include (CMakeHelpers)
 ############  Build customization
 
 # Override from command line "CMake -D<OPTION>=TRUE/FALSE/0/1/ON/OFF"
-option (ENABLE_CPP11 "Build websocketpp with CPP11 features enabled." TRUE)
+option (ENABLE_CPP11 "Build websocketpp with CPP11 features enabled." OFF)
 option (BUILD_EXAMPLES "Build websocketpp examples." FALSE)
 option (BUILD_TESTS "Build websocketpp tests." FALSE)
 
@@ -288,13 +288,15 @@ if(HUNTER_ENABLED)
     Boost::random
     Boost::thread)
 
-  if(MSVC)
-    target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_FUNCTIONAL_)
-    target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_SYSTEM_ERROR_)
-    target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_RANDOM_DEVICE_)
-    target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_MEMORY_)
-  else()
-    target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_STL_)
+  if(ENABLE_CPP11)
+    if(MSVC)
+      target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_FUNCTIONAL_)
+      target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_SYSTEM_ERROR_)
+      target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_RANDOM_DEVICE_)
+      target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_MEMORY_)
+    else()
+      target_compile_definitions (websocketpp INTERFACE _WEBSOCKETPP_CPP11_STL_)
+    endif()
   endif()
 
   target_include_directories(websocketpp INTERFACE
