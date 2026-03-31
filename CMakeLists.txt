@@ -289,7 +289,7 @@ if(HUNTER_ENABLED)
     Boost::system
     Boost::random
     Boost::thread
-    asio::asio)
+    asio::asio_static)
 
   if(ENABLE_CPP11)
     if(MSVC)
