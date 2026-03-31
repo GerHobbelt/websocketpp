@@ -274,10 +274,12 @@ if(HUNTER_ENABLED)
   hunter_add_package(Boost COMPONENTS system random thread)
   hunter_add_package(OpenSSL)
   hunter_add_package(ZLIB)
+  hunter_add_package(asio)
 
   find_package(OpenSSL REQUIRED)
   find_package(ZLIB CONFIG REQUIRED)
   find_package(Boost CONFIG COMPONENTS system random thread)
+  find_package(asio CONFIG REQUIRED)
 
   target_link_libraries(websocketpp INTERFACE
     ${CMAKE_DL_LIBS}
@@ -286,7 +288,8 @@ if(HUNTER_ENABLED)
     ZLIB::zlib
     Boost::system
     Boost::random
-    Boost::thread)
+    Boost::thread
+    asio::asio)
 
   if(ENABLE_CPP11)
     if(MSVC)
