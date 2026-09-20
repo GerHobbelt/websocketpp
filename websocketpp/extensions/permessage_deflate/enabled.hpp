@@ -37,6 +37,7 @@
 #include <websocketpp/error.hpp>
 
 #include <websocketpp/extensions/extension.hpp>
+#include <websocketpp/extensions/permessage_deflate/detail.hpp>
 
 #include "zlib-ng.h"
 
@@ -108,6 +109,9 @@ enum value {
     /// Invalid value for max_window_bits
     invalid_max_window_bits,
 
+    /// Decompressed message exceeded the hard size limit
+    message_too_big,
+
     /// ZLib Error
     zlib_error,
 
@@ -138,6 +142,8 @@ public:
                 return "Unsupported extension attributes";
             case invalid_max_window_bits:
                 return "Invalid value for max_window_bits";
+            case message_too_big:
+                return "Message too big";
             case zlib_error:
                 return "A zlib function returned an error";
             case uninitialized:
@@ -201,6 +207,13 @@ static uint8_t const min_client_max_window_bits = 8;
 /// Maximum value for client_max_window_bits as defined by RFC 7692
 static uint8_t const max_client_max_window_bits = 15;
 
+/// Default maximum decompressed message size enforced by the extension
+/**
+ * Used when the extension's configuration does not specify its own
+ * max_message_size value.
+ */
+static size_t const default_max_message_size = 32000000;
+
 namespace mode {
 enum value {
     /// Accept any value the remote endpoint offers
@@ -227,6 +240,8 @@ public:
       , m_client_max_window_bits_mode(mode::accept)
       , m_initialized(false)
       , m_compress_buffer_size(8192)
+      , m_max_message_size(detail::max_message_size_or_default<
+            config, default_max_message_size>::get())
     {
         m_dstate.zalloc = Z_NULL;
         m_dstate.zfree = Z_NULL;
@@ -485,6 +500,10 @@ public:
         return "permessage-deflate; client_no_context_takeover; client_max_window_bits";
     }
 
+    void set_max_message_size(size_t value) {
+        m_max_message_size = value;
+    }
+
     /// Validate extension response
     /**
      * Confirm that the server has negotiated settings compatible with our
@@ -596,7 +615,14 @@ public:
         m_istate.next_in = const_cast<unsigned char *>(buf);
 
         do {
-            m_istate.avail_out = m_compress_buffer_size;
+            size_t const remaining = out.size() < m_max_message_size
+                ? m_max_message_size - out.size()
+                : 0;
+            // Keep one extra byte of scratch space so we can detect overflow
+            // before appending past the configured per-message limit.
+            size_t const output_limit = (std::min)(m_compress_buffer_size, remaining + size_t(1));
+
+            m_istate.avail_out = static_cast<uInt>(output_limit);
             m_istate.next_out = m_decompress_buffer.get();
 
             ret = inflate(&m_istate, Z_SYNC_FLUSH);
@@ -605,14 +631,32 @@ public:
                 return make_error_code(error::zlib_error);
             }
 
+            size_t const output = output_limit - static_cast<size_t>(m_istate.avail_out);
+
+            if (output > remaining) {
+                if (remaining > 0) {
+                    out.append(
+                        reinterpret_cast<char *>(m_decompress_buffer.get()),
+                        remaining
+                    );
+                }
+
+                return make_error_code(error::message_too_big);
+            }
+
             out.append(
                 reinterpret_cast<char *>(m_decompress_buffer.get()),
-                m_compress_buffer_size - m_istate.avail_out
+                output
             );
         } while (m_istate.avail_out == 0);
 
         return lib::error_code();
     }
+
+    static bool is_message_too_big(lib::error_code const & ec) {
+        return ec == make_error_code(error::message_too_big);
+    }
+
 private:
     /// Generate negotiation response
     /**
@@ -804,6 +848,7 @@ private:
     bool m_initialized;
     int m_flush;
     size_t m_compress_buffer_size;
+    size_t m_max_message_size;
     lib::unique_ptr_uchar_array m_compress_buffer;
     lib::unique_ptr_uchar_array m_decompress_buffer;
     z_stream m_dstate;
