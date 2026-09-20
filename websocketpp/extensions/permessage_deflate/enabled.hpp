@@ -500,6 +500,23 @@ public:
         return "permessage-deflate; client_no_context_takeover; client_max_window_bits";
     }
 
+    /// Set maximum decompressed message size
+    /**
+     * Sets the maximum size, in bytes, that a message may reach after
+     * decompression. If a compressed message would inflate beyond this
+     * limit, decompression is aborted and `error::message_too_big` is
+     * returned. This bounds the worst-case memory cost of a hostile or
+     * malformed compressed payload.
+     *
+     * The initial value is taken from `Config::max_message_size` if the
+     * extension's configuration defines it, otherwise from
+     * `default_max_message_size`. Changes made via this method override
+     * that initial value for the lifetime of the extension instance.
+     *
+     * @since 0.8.3
+     *
+     * @param value The new per-message decompression limit, in bytes
+     */
     void set_max_message_size(size_t value) {
         m_max_message_size = value;
     }
@@ -597,6 +614,19 @@ public:
 
     /// Decompress bytes
     /**
+     * Decompresses up to `len` bytes from `buf` and appends the result to
+     * `out`. Decompression aborts with `error::message_too_big` if the
+     * total size of `out` would exceed the configured per-message limit
+     * (see `set_max_message_size`); this bounds the worst-case memory
+     * cost of a hostile or malformed compressed payload.
+     *
+     * @note If this function returns `error::message_too_big`, the
+     * extension's internal inflate state is left mid-stream and is not
+     * safe to reuse. The caller must discard this instance or call
+     * `init()` again before invoking `decompress()` further. In normal
+     * use the connection is torn down on this error so reuse does not
+     * arise.
+     *
      * @param buf Byte buffer to decompress
      * @param len Length of buf
      * @param out String to append decompressed bytes to
